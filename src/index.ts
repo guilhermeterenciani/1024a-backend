@@ -139,7 +139,7 @@ app.get("/listar_produtos", async (req, res) => {
 app.get("/listar_produtos_informatica", async (req, res) => {
     try {
         const [dados, campos] =
-            await connection.execute<IProduto[]>('SELECT * FROM produto WHERE categoria=`informática`')
+            await connection.execute<IProduto[]>('SELECT * FROM produto WHERE categoria="informática"')
         res.status(200).json(dados)
     } catch (err) {
         console.log(err)
