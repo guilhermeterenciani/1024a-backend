@@ -136,6 +136,54 @@ app.get("/listar_produtos", async (req, res) => {
         }
     }
 })
+app.get("/listar_produtos_informatica", async (req, res) => {
+    try {
+        const [dados, campos] =
+            await connection.execute<IProduto[]>('SELECT * FROM produto WHERE categoria=`informática`')
+        res.status(200).json(dados)
+    } catch (err) {
+        console.log(err)
+        if (err instanceof Error && 'code' in err && err.code === 'ECONNREFUSED') {
+            return res.status(500).json({ mensagem: "ERRO: LIGUE O LARAGON e confira o usuário e senha da conexão" })
+        } else if (err instanceof Error && 'code' in err && err.code === 'ENOTFOUND') {
+            return res.status(500).json({ mensagem: "ERRO: Você digitou algo errado no host da conexão" })
+        } else if (err instanceof Error && 'code' in err && err.code === 'ER_BAD_DB_ERROR') {
+            return res.status(500).json({ mensagem: "ERRO: Confira o nome do banco de dados ou crie um banco com o nome que você passou na conexão" })
+        } else if (err instanceof Error && 'code' in err && err.code === 'ER_ACCESS_DENIED_ERROR') {
+            return res.status(500).json({ mensagem: "ERRO: Confira usuario e senha na conexão" })
+        } else if (err instanceof Error && 'code' in err && err.code === 'ER_PARSE_ERROR') {
+            return res.status(500).json({ mensagem: "ERRO: Você tem um erro na sua SQL, confira o Execute" })
+        } else if (err instanceof Error && 'code' in err && err.code === 'ER_NO_SUCH_TABLE') {
+            return res.status(500).json({ mensagem: "ERRO: Você digitou o nome da tabela errado, confira o Execute!" })
+        } else {
+            return res.status(500).json({ mensagem: "ERRO: Desconhecido!" })
+        }
+    }
+})
+app.get("/listar_produtos_caros", async (req, res) => {
+    try {
+        const [dados, campos] =
+            await connection.execute<IProduto[]>('SELECT * FROM produto WHERE preco>100')
+        res.status(200).json(dados)
+    } catch (err) {
+        console.log(err)
+        if (err instanceof Error && 'code' in err && err.code === 'ECONNREFUSED') {
+            return res.status(500).json({ mensagem: "ERRO: LIGUE O LARAGON e confira o usuário e senha da conexão" })
+        } else if (err instanceof Error && 'code' in err && err.code === 'ENOTFOUND') {
+            return res.status(500).json({ mensagem: "ERRO: Você digitou algo errado no host da conexão" })
+        } else if (err instanceof Error && 'code' in err && err.code === 'ER_BAD_DB_ERROR') {
+            return res.status(500).json({ mensagem: "ERRO: Confira o nome do banco de dados ou crie um banco com o nome que você passou na conexão" })
+        } else if (err instanceof Error && 'code' in err && err.code === 'ER_ACCESS_DENIED_ERROR') {
+            return res.status(500).json({ mensagem: "ERRO: Confira usuario e senha na conexão" })
+        } else if (err instanceof Error && 'code' in err && err.code === 'ER_PARSE_ERROR') {
+            return res.status(500).json({ mensagem: "ERRO: Você tem um erro na sua SQL, confira o Execute" })
+        } else if (err instanceof Error && 'code' in err && err.code === 'ER_NO_SUCH_TABLE') {
+            return res.status(500).json({ mensagem: "ERRO: Você digitou o nome da tabela errado, confira o Execute!" })
+        } else {
+            return res.status(500).json({ mensagem: "ERRO: Desconhecido!" })
+        }
+    }
+})
 
 
 
@@ -144,13 +192,6 @@ app.get("/listar_produtos", async (req, res) => {
  * Na tabela produto, crie os seguintes atributos 
  * 
  *  id, nome, categoria, preco, data_criacao, data_modificacao
- * 
- * 
- * Crie uma rota chamada `listar_produtos` que retorne todos
- * os produtos cadastrados no banco de dados
- * 
- * Crie uma rota chamada `listar_produtos_informatica` que retorne
- * todos os produtos da categoria informatica
  * 
  * Crie uma rota chamada `listar_produtos_caros` que retorne os produtos
  * que custem mais de R$: 100,00
