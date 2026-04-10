@@ -1,5 +1,7 @@
-import mysql, { type RowDataPacket, type Connection, type ResultSetHeader } from 'mysql2/promise';
-import express , {type Response} from 'express';
+import { type RowDataPacket, type ResultSetHeader } from 'mysql2/promise';
+import express from 'express';
+import connection from './mysql_connection.js';
+import MysqlErrorHandle from './mysql_error_handle.js';
 const app = express()
 app.use(express.json())
 
@@ -16,37 +18,8 @@ interface IProduto extends RowDataPacket {
     data_modificacao: Date
 }
 
-class MysqlErrorHandle {
-    constructor() { }
-    validar(err:unknown,res:Response) {
-        console.log(err)
-        if (err instanceof Error && 'code' in err && err.code === 'ECONNREFUSED') {
-            return res.status(500).json({ mensagem: "ERRO: LIGUE O LARAGON e confira o usuário e senha da conexão" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ENOTFOUND') {
-            return res.status(500).json({ mensagem: "ERRO: Você digitou algo errado no host da conexão" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ER_BAD_DB_ERROR') {
-            return res.status(500).json({ mensagem: "ERRO: Confira o nome do banco de dados ou crie um banco com o nome que você passou na conexão" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ER_ACCESS_DENIED_ERROR') {
-            return res.status(500).json({ mensagem: "ERRO: Confira usuario e senha na conexão" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ER_PARSE_ERROR') {
-            return res.status(500).json({ mensagem: "ERRO: Você tem um erro na sua SQL, confira o Execute" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ER_NO_SUCH_TABLE') {
-            return res.status(500).json({ mensagem: "ERRO: Você digitou o nome da tabela errado, confira o Execute!" })
-        } else {
-            return res.status(500).json({ mensagem: "ERRO: Desconhecido!" })
-        }
-    }
-}
 
 
-
-
-
-const connection = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    database: 'luademel',
-});
 
 app.get("/pessoas", async (req, res) => {
     try {
@@ -54,8 +27,8 @@ app.get("/pessoas", async (req, res) => {
             await connection.execute<IPessoa[]>('SELECT * FROM pessoa')
         res.status(200).json(dados)
     } catch (err) {
-        const mysqlErrorHandle = new MysqlErrorHandle()
-        mysqlErrorHandle.validar(err,res)
+        const mysqlErrorHandle = new MysqlErrorHandle(err, res)
+        mysqlErrorHandle.validar()
     }
 })
 app.post("/pessoas", async (req, res) => {
@@ -69,22 +42,8 @@ app.post("/pessoas", async (req, res) => {
         return res.status(201).json({ mensagem: "Sucesso ao inserir!" })
 
     } catch (err) {
-        console.log(err)
-        if (err instanceof Error && 'code' in err && err.code === 'ECONNREFUSED') {
-            return res.status(500).json({ mensagem: "ERRO: LIGUE O LARAGON e confira o usuário e senha da conexão" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ENOTFOUND') {
-            return res.status(500).json({ mensagem: "ERRO: Você digitou algo errado no host da conexão" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ER_BAD_DB_ERROR') {
-            return res.status(500).json({ mensagem: "ERRO: Confira o nome do banco de dados ou crie um banco com o nome que você passou na conexão" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ER_ACCESS_DENIED_ERROR') {
-            return res.status(500).json({ mensagem: "ERRO: Confira usuario e senha na conexão" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ER_PARSE_ERROR') {
-            return res.status(500).json({ mensagem: "ERRO: Você tem um erro na sua SQL, confira o Execute" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ER_NO_SUCH_TABLE') {
-            return res.status(500).json({ mensagem: "ERRO: Você digitou o nome da tabela errado, confira o Execute!" })
-        } else {
-            return res.status(500).json({ mensagem: "ERRO: Desconhecido!" })
-        }
+        const mysqlErrorHandle = new MysqlErrorHandle(err, res)
+        mysqlErrorHandle.validar()
     }
 })
 
@@ -107,22 +66,8 @@ app.post("/cadastro_produto", async (req, res) => {
         return res.status(201).json({ mensagem: "Sucesso ao inserir!" })
 
     } catch (err) {
-        console.log(err)
-        if (err instanceof Error && 'code' in err && err.code === 'ECONNREFUSED') {
-            return res.status(500).json({ mensagem: "ERRO: LIGUE O LARAGON e confira o usuário e senha da conexão" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ENOTFOUND') {
-            return res.status(500).json({ mensagem: "ERRO: Você digitou algo errado no host da conexão" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ER_BAD_DB_ERROR') {
-            return res.status(500).json({ mensagem: "ERRO: Confira o nome do banco de dados ou crie um banco com o nome que você passou na conexão" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ER_ACCESS_DENIED_ERROR') {
-            return res.status(500).json({ mensagem: "ERRO: Confira usuario e senha na conexão" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ER_PARSE_ERROR') {
-            return res.status(500).json({ mensagem: "ERRO: Você tem um erro na sua SQL, confira o Execute" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ER_NO_SUCH_TABLE') {
-            return res.status(500).json({ mensagem: "ERRO: Você digitou o nome da tabela errado, confira o Execute!" })
-        } else {
-            return res.status(500).json({ mensagem: "ERRO: Desconhecido!" })
-        }
+        const mysqlErrorHandle = new MysqlErrorHandle(err, res)
+        mysqlErrorHandle.validar()
     }
 })
 
@@ -132,22 +77,8 @@ app.get("/listar_produtos", async (req, res) => {
             await connection.execute<IProduto[]>('SELECT * FROM produto')
         res.status(200).json(dados)
     } catch (err) {
-        console.log(err)
-        if (err instanceof Error && 'code' in err && err.code === 'ECONNREFUSED') {
-            return res.status(500).json({ mensagem: "ERRO: LIGUE O LARAGON e confira o usuário e senha da conexão" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ENOTFOUND') {
-            return res.status(500).json({ mensagem: "ERRO: Você digitou algo errado no host da conexão" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ER_BAD_DB_ERROR') {
-            return res.status(500).json({ mensagem: "ERRO: Confira o nome do banco de dados ou crie um banco com o nome que você passou na conexão" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ER_ACCESS_DENIED_ERROR') {
-            return res.status(500).json({ mensagem: "ERRO: Confira usuario e senha na conexão" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ER_PARSE_ERROR') {
-            return res.status(500).json({ mensagem: "ERRO: Você tem um erro na sua SQL, confira o Execute" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ER_NO_SUCH_TABLE') {
-            return res.status(500).json({ mensagem: "ERRO: Você digitou o nome da tabela errado, confira o Execute!" })
-        } else {
-            return res.status(500).json({ mensagem: "ERRO: Desconhecido!" })
-        }
+        const mysqlErrorHandle = new MysqlErrorHandle(err, res)
+        mysqlErrorHandle.validar()
     }
 })
 app.get("/listar_produtos_informatica", async (req, res) => {
@@ -156,22 +87,8 @@ app.get("/listar_produtos_informatica", async (req, res) => {
             await connection.execute<IProduto[]>('SELECT * FROM produto WHERE categoria="informática"')
         res.status(200).json(dados)
     } catch (err) {
-        console.log(err)
-        if (err instanceof Error && 'code' in err && err.code === 'ECONNREFUSED') {
-            return res.status(500).json({ mensagem: "ERRO: LIGUE O LARAGON e confira o usuário e senha da conexão" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ENOTFOUND') {
-            return res.status(500).json({ mensagem: "ERRO: Você digitou algo errado no host da conexão" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ER_BAD_DB_ERROR') {
-            return res.status(500).json({ mensagem: "ERRO: Confira o nome do banco de dados ou crie um banco com o nome que você passou na conexão" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ER_ACCESS_DENIED_ERROR') {
-            return res.status(500).json({ mensagem: "ERRO: Confira usuario e senha na conexão" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ER_PARSE_ERROR') {
-            return res.status(500).json({ mensagem: "ERRO: Você tem um erro na sua SQL, confira o Execute" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ER_NO_SUCH_TABLE') {
-            return res.status(500).json({ mensagem: "ERRO: Você digitou o nome da tabela errado, confira o Execute!" })
-        } else {
-            return res.status(500).json({ mensagem: "ERRO: Desconhecido!" })
-        }
+        const mysqlErrorHandle = new MysqlErrorHandle(err, res)
+        mysqlErrorHandle.validar()
     }
 })
 app.get("/listar_produtos_caros", async (req, res) => {
@@ -180,42 +97,10 @@ app.get("/listar_produtos_caros", async (req, res) => {
             await connection.execute<IProduto[]>('SELECT * FROM produto WHERE preco>100')
         res.status(200).json(dados)
     } catch (err) {
-        console.log(err)
-        if (err instanceof Error && 'code' in err && err.code === 'ECONNREFUSED') {
-            return res.status(500).json({ mensagem: "ERRO: LIGUE O LARAGON e confira o usuário e senha da conexão" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ENOTFOUND') {
-            return res.status(500).json({ mensagem: "ERRO: Você digitou algo errado no host da conexão" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ER_BAD_DB_ERROR') {
-            return res.status(500).json({ mensagem: "ERRO: Confira o nome do banco de dados ou crie um banco com o nome que você passou na conexão" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ER_ACCESS_DENIED_ERROR') {
-            return res.status(500).json({ mensagem: "ERRO: Confira usuario e senha na conexão" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ER_PARSE_ERROR') {
-            return res.status(500).json({ mensagem: "ERRO: Você tem um erro na sua SQL, confira o Execute" })
-        } else if (err instanceof Error && 'code' in err && err.code === 'ER_NO_SUCH_TABLE') {
-            return res.status(500).json({ mensagem: "ERRO: Você digitou o nome da tabela errado, confira o Execute!" })
-        } else {
-            return res.status(500).json({ mensagem: "ERRO: Desconhecido!" })
-        }
+        const mysqlErrorHandle = new MysqlErrorHandle(err, res)
+        mysqlErrorHandle.validar()
     }
 })
-
-
-
-/**
- * No banco de dados 'luademel' crie uma nova tabela chamada produto
- * Na tabela produto, crie os seguintes atributos 
- * 
- *  id, nome, categoria, preco, data_criacao, data_modificacao
- * 
- * Crie uma rota chamada `listar_produtos_caros` que retorne os produtos
- * que custem mais de R$: 100,00
- * 
- */
-
-
-
-
-
 app.listen(8000, () => {
     console.log("Iniciando o servidor na porta 8000")
 })
