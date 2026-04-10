@@ -54,7 +54,8 @@ app.get("/pessoas", async (req, res) => {
             await connection.execute<IPessoa[]>('SELECT * FROM pessoa')
         res.status(200).json(dados)
     } catch (err) {
-
+        const mysqlErrorHandle = new MysqlErrorHandle()
+        mysqlErrorHandle.validar(err,res)
     }
 })
 app.post("/pessoas", async (req, res) => {
