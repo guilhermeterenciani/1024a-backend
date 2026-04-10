@@ -1,5 +1,5 @@
 import mysql, { type RowDataPacket, type Connection, type ResultSetHeader } from 'mysql2/promise';
-import express from 'express';
+import express , {type Response} from 'express';
 const app = express()
 app.use(express.json())
 
@@ -8,26 +8,17 @@ interface IPessoa extends RowDataPacket {
     nome: string,
 }
 interface IProduto extends RowDataPacket {
-    id:number,
-    nome:string,
-    categoria:string,
-    preco:number,
-    data_criacao:Date,
-    data_modificacao:Date
+    id: number,
+    nome: string,
+    categoria: string,
+    preco: number,
+    data_criacao: Date,
+    data_modificacao: Date
 }
 
-const connection = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    database: 'luademel',
-});
-
-app.get("/pessoas", async (req, res) => {
-    try {
-        const [dados, campos] =
-            await connection.execute<IPessoa[]>('SELECT * FROM pessoa')
-        res.status(200).json(dados)
-    } catch (err) {
+class MysqlErrorHandle {
+    constructor() { }
+    validar(err:unknown,res:Response) {
         console.log(err)
         if (err instanceof Error && 'code' in err && err.code === 'ECONNREFUSED') {
             return res.status(500).json({ mensagem: "ERRO: LIGUE O LARAGON e confira o usuário e senha da conexão" })
@@ -44,6 +35,26 @@ app.get("/pessoas", async (req, res) => {
         } else {
             return res.status(500).json({ mensagem: "ERRO: Desconhecido!" })
         }
+    }
+}
+
+
+
+
+
+const connection = mysql.createPool({
+    host: 'localhost',
+    user: 'root',
+    database: 'luademel',
+});
+
+app.get("/pessoas", async (req, res) => {
+    try {
+        const [dados, campos] =
+            await connection.execute<IPessoa[]>('SELECT * FROM pessoa')
+        res.status(200).json(dados)
+    } catch (err) {
+
     }
 })
 app.post("/pessoas", async (req, res) => {
@@ -76,18 +87,20 @@ app.post("/pessoas", async (req, res) => {
     }
 })
 
+
+
 app.post("/cadastro_produto", async (req, res) => {
     const { id, nome, categoria, preco, data_criacao, data_modificacao } = req.body
 
-    if(id==''||id==null||nome==''||categoria==''||preco==''||data_criacao==''||data_modificacao==''){
-        return res.status(500).json({mensagem:"Dados enviados no formato errado, confira o JSON"})
+    if (id == '' || id == null || nome == '' || categoria == '' || preco == '' || data_criacao == '' || data_modificacao == '') {
+        return res.status(500).json({ mensagem: "Dados enviados no formato errado, confira o JSON" })
     }
 
     try {
         const [result] =
             await connection
-                .execute<ResultSetHeader>('INSERT INTO produto VALUES (?,?,?,?,?,?)', 
-                                [id, nome, categoria, preco, data_criacao, data_modificacao])
+                .execute<ResultSetHeader>('INSERT INTO produto VALUES (?,?,?,?,?,?)',
+                    [id, nome, categoria, preco, data_criacao, data_modificacao])
         if (result.affectedRows === 0)
             return res.status(500).json({ mensagem: "Erro ao inserir!" })
         return res.status(201).json({ mensagem: "Sucesso ao inserir!" })
