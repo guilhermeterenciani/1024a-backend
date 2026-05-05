@@ -109,6 +109,7 @@ app.get("/listar_produtos_caros", async (req, res) => {
 //                      INNER JOIN pedidos p ON c.idclientes=p.clientes_idclientes
 app.get("/cliente_data_pedido", async (req, res) => {
     try {
+        console.log("Chamei a função no backend")
         const [dados, campos] =
             await connection.execute('SELECT nome,datapedido FROM clientes c INNER JOIN pedidos p ON c.idclientes=p.clientes_idclientes')
         res.status(200).json(dados)

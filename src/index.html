@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <main class="content" id="contentid">
+
+    </main>
+    
+    <script>
+        async function buscaDado(){
+            //Buscar Dados Na API  -> fetch
+            const resposta = await fetch("http://localhost:8000/cliente_data_pedido")
+            const dados = await resposta.json()
+            console.log(dados)
+        }
+        buscaDado()
+    </script>
+</body>
+</html>
