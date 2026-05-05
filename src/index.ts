@@ -2,7 +2,9 @@ import { type RowDataPacket, type ResultSetHeader } from 'mysql2/promise';
 import express from 'express';
 import connection from './mysql_connection.js';
 import MysqlErrorHandle from './mysql_error_handle.js';
+import cors from 'cors'
 const app = express()
+app.use(cors())
 app.use(express.json())
 
 interface IPessoa extends RowDataPacket {
